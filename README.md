@@ -37,3 +37,11 @@ If you accidentally create a homography point you don't want, you can select the
 ![Screenshot of selected points](media/selected_points.png)
 
 Be careful - coordinates are always selected in pairs. If you delete coordinate N from the left image, it will also be deleted from the right image (unless there's an uneven number of coordinates in the 2 images).
+
+### Previewing and generating a homography.
+
+Once you think you have a homography you'll be happy with, press the "Preview Homography" button. This will open a new window overlaying the left image on the right image. The images will be drawn on top of one another with a transparency. You can adjust the amount of transparency with the alpha slider at the bottom of the dialog to see if you're happy with the homography or not.
+
+If the homography needs more work, you can go back and add or remove points in the main gui.
+
+When you're ready to get the final homography matrix, press the "Generate Homography" button!

@@ -47,6 +47,9 @@ class PreviewDialog2(QtWidgets.QDialog):
         swap_btn.clicked.connect(self.swap_images)
         controls.addWidget(swap_btn)
 
+        # Opacity label and slider
+        opacity_label = QtWidgets.QLabel("Opacity:")
+        controls.addWidget(opacity_label)
         self.alpha_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.alpha_slider.setRange(0, 100)
         self.alpha_slider.setValue(int(self.alpha * 100))
