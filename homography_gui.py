@@ -357,7 +357,6 @@ class HomographyFinder(QtWidgets.QWidget):
         x = int(int(pos.x() / zoom) * zoom)
         y = int(int(pos.y() / zoom) * zoom)
         w, h = int(np.ceil(zoom)), int(np.ceil(zoom))
-        print(f"drawrect {x}, {y}, {w}, {h}")
         painter.drawRect(x, y, w, h)
         painter.end()
         label.setPixmap(base)
