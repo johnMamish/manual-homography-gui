@@ -19,7 +19,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QSignalBlocker
 
 class PreviewDialog(QtWidgets.QDialog):
-    def __init__(self, img1: np.ndarray, warped: np.ndarray, parent=None):
+    def __init__(self, img1: np.ndarray, warped: np.ndarray, npoints: int, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Preview Homography")
         self.img1 = img1
@@ -40,6 +40,9 @@ class PreviewDialog(QtWidgets.QDialog):
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
         scroll.setWidget(self.image_label)
         vbox.addWidget(scroll)
+
+        # Label
+        vbox.addWidget(QtWidgets.QLabel(f"This homography generated with {npoints} coordinate pairs"))
 
         # Controls: Swap, Alpha slider, Zoom instructions
         controls = QtWidgets.QHBoxLayout()
@@ -421,6 +424,20 @@ class HomographyFinder(QtWidgets.QWidget):
             msg.setStyleSheet("QLabel{font-family: 'Courier New';}")
             msg.exec_()
             return True
+
+        if (len(self.coords1) < 15):
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setWindowTitle("Info")
+            msg.setText(
+                f"Your homography uses {len(self.coords1)} point pairs.\n" +\
+                f"The more the better! If your homography doesn't look great, try adding more pairs."
+            )
+
+            # Apply monospace font to the message text
+            msg.setStyleSheet("QLabel{font-family: 'Courier New';}")
+            msg.exec_()
+
         return False
 
     def gen_homo(self):
@@ -450,7 +467,7 @@ class HomographyFinder(QtWidgets.QWidget):
             (self.image1.shape[1], self.image1.shape[0]),
             flags=cv2.INTER_NEAREST
         )
-        dlg = PreviewDialog(self.image1, warped, self)
+        dlg = PreviewDialog(self.image1, warped, len(self.coords1), self)
         dlg.exec_()
 
     def keyPressEvent(self, event):
