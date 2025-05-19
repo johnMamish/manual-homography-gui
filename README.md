@@ -42,6 +42,8 @@ Be careful - coordinates are always selected in pairs. If you delete coordinate 
 
 Once you think you have a homography you'll be happy with, press the "Preview Homography" button. This will open a new window overlaying the left image on the right image. The images will be drawn on top of one another with a transparency. You can adjust the amount of transparency with the alpha slider at the bottom of the dialog to see if you're happy with the homography or not.
 
+![](media/preview_1.png) ![](media/preview_2.png) ![](media/preview_3.png)
+
 If the homography needs more work, you can go back and add or remove points in the main gui.
 
 When you're ready to get the final homography matrix, press the "Generate Homography" button!
