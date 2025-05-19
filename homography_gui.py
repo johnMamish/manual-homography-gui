@@ -157,6 +157,9 @@ class HomographyFinder(QtWidgets.QWidget):
         self.img1_label.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.img1_label.setMouseTracking(True)
         self.img1_label.installEventFilter(self)
+        self.img1_label.mousePressEvent = self.click1
+        self.img1_label.mouseMoveEvent = self.hover1
+
         scroll1 = QtWidgets.QScrollArea()
         scroll1.setWidgetResizable(True)
         scroll1.setWidget(self.img1_label)
@@ -167,6 +170,9 @@ class HomographyFinder(QtWidgets.QWidget):
         self.img2_label.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.img2_label.setMouseTracking(True)
         self.img2_label.installEventFilter(self)
+        self.img2_label.mousePressEvent = self.click2
+        self.img2_label.mouseMoveEvent = self.hover2
+
         scroll2 = QtWidgets.QScrollArea()
         scroll2.setWidgetResizable(True)
         scroll2.setWidget(self.img2_label)
@@ -229,8 +235,10 @@ class HomographyFinder(QtWidgets.QWidget):
         self.zoom_input2.returnPressed.connect(self.apply_zoom2)
         vbox.addWidget(self.zoom_input2)
 
-        self.image1 = None
-        self.image2 = None
+        self.image1 = np.ones((500, 500, 3), np.uint8) * 255
+        self.image2 = np.ones((500, 500, 3), np.uint8) * 255
+
+        self.redraw()
 
     def load_images(self):
         f1, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Image 1")
@@ -241,18 +249,23 @@ class HomographyFinder(QtWidgets.QWidget):
             self.redraw()
 
     def redraw(self):
+        self.img1_label.mousePressEvent = self.click1
+        self.img1_label.mouseMoveEvent = self.hover1
+        self.img2_label.mousePressEvent = self.click2
+        self.img2_label.mouseMoveEvent = self.hover2
+
+        self.img1_label.setMouseTracking(True)
+        self.img2_label.setMouseTracking(True)
+
         if self.image1 is None or self.image2 is None:
             return
+
         # Left
         pix1 = self._make_pix(self.image1, self.coords1, self.zoom1)
         self.img1_label.setPixmap(pix1)
-        self.img1_label.mousePressEvent = self.click1
-        self.img1_label.mouseMoveEvent = self.hover1
         # Right
         pix2 = self._make_pix(self.image2, self.coords2, self.zoom2)
         self.img2_label.setPixmap(pix2)
-        self.img2_label.mousePressEvent = self.click2
-        self.img2_label.mouseMoveEvent = self.hover2
 
     def _make_pix(self, img, coords, zoom):
         # Zoom
@@ -333,9 +346,7 @@ class HomographyFinder(QtWidgets.QWidget):
 
     def hover2(self, event):
         self.redraw()
-        print("xxxxx")
         self._draw_hover(self.img2_label, event.pos(), self.zoom2)
-        print("yyyyy")
 
     def _draw_hover(self, label, pos, zoom):
         base = label.pixmap().copy()
@@ -352,7 +363,7 @@ class HomographyFinder(QtWidgets.QWidget):
         label.setPixmap(base)
 
     def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.Wheel and (event.modifiers() & QtCore.Qt.ControlModifier):
+        if (event.type() == QtCore.QEvent.Wheel and (event.modifiers() & QtCore.Qt.ControlModifier)):
             delta = event.angleDelta().y()
             if obj == self.img1_label:
                 self.zoom1 *= 1.1 if delta > 0 else (1/1.1)
@@ -407,7 +418,21 @@ class HomographyFinder(QtWidgets.QWidget):
 
     def _check_min_points_failed(self):
         MIN_POINTS = 5
-        if (len(self.coords1) < MIN_POINTS or len(self.coords2) < MIN_POINTS):
+        if (len(self.coords1) != len(self.coords2)):
+            # Custom warning with monospace font
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Warning")
+            msg.setText(
+                f"The left and right images should have the same number of points selected to generate a homography. " +\
+                f"The left image has {len(self.coords1)} points but the right image has {len(self.coords2)}. "+\
+                f"Please select more points to generate a homography."
+            )
+            # Apply monospace font to the message text
+            msg.setStyleSheet("QLabel{font-family: 'Courier New';}")
+            msg.exec_()
+            return True
+        elif (len(self.coords1) < MIN_POINTS or len(self.coords2) < MIN_POINTS):
             # Custom warning with monospace font
             msg = QtWidgets.QMessageBox(self)
             msg.setIcon(QtWidgets.QMessageBox.Warning)
