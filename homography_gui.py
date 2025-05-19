@@ -18,7 +18,7 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QSignalBlocker
 
-class PreviewDialog2(QtWidgets.QDialog):
+class PreviewDialog(QtWidgets.QDialog):
     def __init__(self, img1: np.ndarray, warped: np.ndarray, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Preview Homography")
@@ -104,33 +104,6 @@ class PreviewDialog2(QtWidgets.QDialog):
             self.update_display()
             return True
         return super().eventFilter(obj, event)
-
-class PreviewDialog(QtWidgets.QDialog):
-    def __init__(self, img1: np.ndarray, warped: np.ndarray, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Preview Homography")
-        layout = QtWidgets.QHBoxLayout(self)
-
-        # Original image label
-        label_orig = QtWidgets.QLabel()
-        pix_orig = self._to_pixmap(img1)
-        label_orig.setPixmap(pix_orig)
-        layout.addWidget(label_orig)
-
-        # Warped image label
-        label_warped = QtWidgets.QLabel()
-        pix_warped = self._to_pixmap(warped)
-        label_warped.setPixmap(pix_warped)
-        layout.addWidget(label_warped)
-
-    def _to_pixmap(self, img: np.ndarray) -> QtGui.QPixmap:
-        # Convert BGR to RGB
-        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        h, w = rgb.shape[:2]
-        bytes_per_line = 3 * w
-        qimg = QtGui.QImage(rgb.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-        return QtGui.QPixmap.fromImage(qimg)
-
 
 INSTRUCTION_STR = "This GUI can be used to make and test homographies between 2 images.\n" \
     "Press the 'load images' button to choose 2 images to view side-by-side. Click on the images to place homogrpahy points.\n" \
@@ -477,7 +450,7 @@ class HomographyFinder(QtWidgets.QWidget):
             (self.image1.shape[1], self.image1.shape[0]),
             flags=cv2.INTER_NEAREST
         )
-        dlg = PreviewDialog2(self.image1, warped, self)
+        dlg = PreviewDialog(self.image1, warped, self)
         dlg.exec_()
 
     def keyPressEvent(self, event):
